@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=R0913, R0201
 """Laminate - Create beatifull yet simple html and pdf documents
 from markdown"""
 from os import path, makedirs
@@ -14,36 +15,48 @@ class Laminate():
     def __init__(self, **config):
         self._config = config
 
-    def create_html(self, input_directory, input_file='index.md',
-                    output_dir=None):
+    def create_html(self, input_dir=None, input_file='index.md',
+                    build_dir='build', templates_dir=None, template_name=None):
         """Create the complete report as an html document
 
         Parameters:
-            input_directory : (str)
+            input_dir : (str)
                 Path to directory containing the mardownfiles
 
             input_file : (str)
-                Name of the index markdownfile. **Default:** index.md
+                Name of the index markdownfile. **default:** index.md
 
-            output_dir : (str)
-                Path to output directory
+            build_dir : (str)
+                Path to output directory. **default: build**
+
+            templates_dir : (array)
+                Path to custom template directory
+
+            template_name : (str)
+                Name of template that should be used. Name
+                must match template folder name. (e.g. my_template) inside a
+                template directory.
 
         Returns:
             None:
                 Creates a new html document in the directory
-                spesified by output_dir
+                spesified by build_dir
         """
-        parsed_md = self.parse_markdown(input_directory, input_file)
-        full_html = self.parse_jinja(parsed_md)
+        parsed_md = self.parse_markdown(input_dir, input_file)
+        full_html = self.parse_jinja(parsed_md, templates_dir, template_name)
 
-        # if output_dir is False or None:
-        #     output_dir = path.join(path.dirname(__file__), 'build')
+        filename = self._output_filename(input_dir, build_dir, 'index.html')
 
-        destination_file = path.join(output_dir, 'index.html')
+        self._write_result(full_html, filename)
 
-        makedirs(path.dirname(destination_file), exist_ok=True)
-        with open(destination_file, 'wt') as f:
-            f.write(full_html)
+    def _write_result(self, content, output_file):
+        makedirs(path.dirname(output_file), exist_ok=True)
+        with open(output_file, 'wt') as f:
+            f.write(content)
+
+    def _output_filename(self, input_dir, build_dir, filename):
+        output_dir_name = input_dir.split('/')[-1]
+        return path.join(build_dir, output_dir_name, filename)
 
     def parse_markdown(self, input_directory, input_file='index.md'):
         # pylint: disable=R0201
@@ -79,7 +92,7 @@ class Laminate():
 
         return markdown.markdown(md_text, extensions=markdown_extensions)
 
-    def parse_jinja(self, html, template_path=None):
+    def parse_jinja(self, html, templates_dir=None, template_name=None):
         # pylint: disable=E1101
         """Combines a string of html with the jinja2 templates.
 
@@ -87,14 +100,29 @@ class Laminate():
             doc_html : (str)
                 HTML as a string
 
+            templates_dir : (array)
+                Path to custom template directory
+
+            template_name : (str)
+                Name of template that should be used. Name
+                must match template folder name. (e.g. my_template) inside a
+                template directory.
+
         Returns:
             str:
                 The complete html document parsed by jinja as a string.
         """
-        loaded_templates = FileSystemLoader(template_path, followlinks=True)
-        loaders = [loaded_templates, PackageLoader('laminate', 'templates'),]
-        env = Environment(loader=ChoiceLoader(loaders))
+        if templates_dir is None:
+            env = Environment(loader=PackageLoader('laminate', 'templates'))
+        else:
+            loaded_templates = FileSystemLoader(templates_dir, followlinks=True)
+            loaders = [loaded_templates, PackageLoader('laminate', 'templates'),]
+            env = Environment(loader=ChoiceLoader(loaders))
 
-        template = env.get_template('default/index.html')
+
+        if template_name is None:
+            template = env.get_template('default/index.html')
+        else:
+            template = env.get_template('{}/index.html'.format(template_name))
 
         return template.render(content=html, **self._config)

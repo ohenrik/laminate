@@ -5,6 +5,7 @@ from setuptools import setup
 
 setup(name='laminate',
       version='0.1',
+      url='https://github.com/ohenrik/laminate',
       description='Tool for creating styled html and pdf from markup',
       long_description=__doc__,
       author='Ole Henrik Skogstrøm',
@@ -12,13 +13,13 @@ setup(name='laminate',
       packages=['laminate', 'laminate.templates'],
       include_package_data=True,
       install_requires=[
-        'docopt>=0.6.2',
-        'Jinja2>=2.8',
-        'Markdown>=2.6.6',
-        'markdown-include>=0.5.1',
+          'docopt>=0.6.2',
+          'Jinja2>=2.8',
+          'Markdown>=2.6.6',
+          'markdown-include>=0.5.1',
       ],
       classifiers=[
-          'Development Status :: 1 - Pre-Alpha'
+          'Development Status :: 2 - Pre-Alpha'
       ]
      )
 
