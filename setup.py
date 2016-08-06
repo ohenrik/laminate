@@ -17,6 +17,7 @@ setup(name='laminate',
           'Jinja2>=2.8',
           'Markdown>=2.6.6',
           'markdown-include>=0.5.1',
+          'laminate_deafult'
       ],
       classifiers=[
           'Development Status :: 2 - Pre-Alpha'
