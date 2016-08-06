@@ -58,7 +58,7 @@ class Laminate():
 
     def _write_result(self, content, output_file):
         makedirs(path.dirname(output_file), exist_ok=True)
-        with open(output_file, 'wt') as f:
+        with open(output_file, 'wt', encoding="utf-8") as f:
             f.write(content)
 
     def _output_filename(self, input_dir, build_dir, filename):
