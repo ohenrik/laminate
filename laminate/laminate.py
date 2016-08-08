@@ -3,7 +3,7 @@
 """Laminate - Create beatifull yet simple html and pdf documents
 from markdown"""
 import os
-from shutil import copy, copytree, rmtree
+from shutil import copytree, rmtree
 from jinja2 import Environment, FileSystemLoader
 import markdown
 import laminate_default # pylint: disable=E0401
@@ -39,51 +39,54 @@ class Laminate():
         self._config = config
 
 
-    def create_html(self):
+    def create_html(self, markdown_parser=None):
         """Create the complete report as an html document
 
         Returns:
-            None:
-                Creates a new html document in the directory
-                spesified by build_dir
-        """
+            dict:
+                a dictionary (html, assets) contaning, paths to html file
+                and assets directory.
 
+        """
         self._clean_up_build_dir()
 
-        parsed_html = self.parse_jinja()
-        filename = os.path.join(self._build_dir, 'index.html')
+        output_file = os.path.join(self._build_dir, 'index.html')
+        parsed_html = self.parse_jinja(markdown_parser)
 
-        self._write_result(parsed_html, filename)
+        file_paths = {}
+        file_paths['html'] = self._write_result(parsed_html, output_file)
+        file_paths['assets'] = self._copy_template_assets('assets')
+        return file_paths
 
-        self._copy_template_resources('index.css', 'images', 'fonts')
 
-    def _copy_template_resources(self, *resources):
-        for resource in resources:
-            source = os.path.join(self._template, resource)
-            destination = os.path.join(self._build_dir, resource)
-            if os.path.isdir(source):
-                copytree(source, destination)
-            else:
-                copy(source, destination)
+    def _copy_template_assets(self, asssets_dir='assets', source=None, destination=None):
+        source = source or os.path.join(self._template, asssets_dir)
+        destination = destination or os.path.join(self._build_dir, asssets_dir)
+        # Copy all assets from template
+        copytree(source, destination)
+        return destination
 
     def _clean_up_build_dir(self):
         if os.path.exists(self._build_dir):
             rmtree(self._build_dir)
 
     def _write_result(self, content, output_file):
-        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+        output_dir = os.path.dirname(output_file)
+        if os.path.exists(output_dir) is False:
+            os.makedirs(output_dir)
         with open(output_file, 'wt', encoding="utf-8") as f:
             f.write(content)
+        return output_file
 
     def parse_markdown(self, text=None, extentions=()):
         # pylint: disable=R0201
         """Parse markdown to html
 
         Parameters:
-            text : (str)
+            text : str
                 text to be converted to markdown
 
-            extentions : (str)
+            extentions : touple
                 A touple of extentions to be added to Python Markdown
 
         Returns:
@@ -91,7 +94,7 @@ class Laminate():
                 String containing the parsed mardown as html
         """
         text = text or open(self._input_file, 'r').read()
-        # Read morea about these features here:
+        # Read more about extentions here:
         # https://pythonhosted.org/Markdown/extensions/index.html
         markdown_extensions = [
             'markdown.extensions.extra',
