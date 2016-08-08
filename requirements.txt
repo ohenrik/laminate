@@ -10,3 +10,4 @@ mccabe==0.5.0
 pylint==1.6.4
 six==1.10.0
 wrapt==1.10.8
+pytest

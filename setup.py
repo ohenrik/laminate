@@ -4,7 +4,7 @@ from markdown
 from setuptools import setup
 
 setup(name='laminate',
-      version='0.3',
+      version='0.4',
       url='https://github.com/ohenrik/laminate',
       description='Tool for creating styled html and pdf from markup',
       long_description=__doc__,
