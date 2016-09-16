@@ -55,13 +55,14 @@ class Laminate():
 
         file_paths = {}
         file_paths['html'] = self._write_result(parsed_html, output_file)
-        file_paths['assets'] = self._copy_template_assets('assets')
+        file_paths['assets'] = self._copy_template_assets()
         return file_paths
 
 
-    def _copy_template_assets(self, asssets_dir='assets', source=None, destination=None):
-        source = source or os.path.join(self._template, asssets_dir)
-        destination = destination or os.path.join(self._build_dir, asssets_dir)
+    def _copy_template_assets(self, asset_dir='assets',
+                              source=None, destination=None):
+        source = source or os.path.join(self._template, asset_dir)
+        destination = destination or os.path.join(self._build_dir, asset_dir)
         # Copy all assets from template
         copytree(source, destination)
         return destination
